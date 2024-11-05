@@ -9,7 +9,8 @@ namespace PythonScriptConverter {
 
     PyObject *loadPythonModule(const string &moduleName) {
         PyObject *sysPath = PySys_GetObject("path");
-        PyObject *pPath = PyUnicode_FromString((workingDirectory.parent_path() / "resources").string().c_str());
+        PyObject *pPath = PyUnicode_FromString(
+            (workingDirectory.parent_path() / "resources" / "PythonScripts").string().c_str());
 
         PyList_Append(sysPath, pPath);
         Py_DECREF(pPath);
