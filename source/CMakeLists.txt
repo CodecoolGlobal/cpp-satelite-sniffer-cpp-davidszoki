@@ -11,8 +11,12 @@ set(SOURCES
 add_executable(cpp_satelite_sniffer_cpp_davidszoki ${SOURCES})
 
 find_package(Python3 REQUIRED COMPONENTS Development)
+find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
 
 target_link_libraries(cpp_satelite_sniffer_cpp_davidszoki
         PRIVATE
         Python3::Python
-)
+        SDL2::SDL2main
+        SDL2::SDL2
+        SDL2_image::SDL2_image)
