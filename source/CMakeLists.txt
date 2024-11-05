@@ -1,9 +1,11 @@
 set(SOURCES
         main.cpp
-        PythonScriptConverter.cpp
-        PythonScriptExecutor.cpp
-        GPS.cpp
-        TLE.cpp
+        PythonScriptProcess/PythonScriptConverter.cpp
+        PythonScriptProcess/PythonScriptExecutor.cpp
+        SatelliteSniffer/GPS.cpp
+        SatelliteSniffer/TLE.cpp
+        UI/UI.cpp
+        UI/Texture.cpp
 )
 
 add_executable(cpp_satelite_sniffer_cpp_davidszoki ${SOURCES})
