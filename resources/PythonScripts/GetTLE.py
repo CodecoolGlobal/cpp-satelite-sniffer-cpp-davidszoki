@@ -4,10 +4,10 @@ import os
 
 def fetch_tle_data(username, password):
     login_url = "https://www.space-track.org/ajaxauth/login"
-    tle_url = "https://www.space-track.org/basicspacedata/query/class/tle/NORAD_CAT_ID/25544/orderby/EPOCH%20desc/limit/1000/format/tle"
+    tle_url = "https://www.space-track.org/basicspacedata/query/class/tle_latest/NORAD_CAT_ID/25544/orderby/EPOCH desc/limit/1/format/tle"
 
     current_directory = os.path.dirname(os.getcwd())
-    file_path = os.path.join(os.path.dirname(current_directory), "resources", "TLE", "iss_tle_last_1000.txt")
+    file_path = os.path.join(os.path.dirname(current_directory), "resources", "TLE", "iss_last_tle.txt")
 
     if os.path.exists(file_path):
         return f"The file '{file_path}'\nalready exists. No action taken."
