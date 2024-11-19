@@ -2,6 +2,7 @@
 #include <iostream>
 #include <filesystem>
 #include <SDL_image.h>
+#include <Utils.h>
 
 using namespace std;
 
@@ -12,7 +13,7 @@ UI::~UI() {
     SDL_Quit();
 }
 
-void UI::run(const float speed) {
+void UI::run() {
     init();
     const auto path = std::filesystem::current_path().parent_path() /= "../resources/Images/";
     Texture issPic = loadTexture(path.u8string() + "ISS.png");
@@ -25,27 +26,32 @@ void UI::run(const float speed) {
 
     SDL_Delay(100);
     bool quit = false;
-    Uint32 timePassed = 0;
-    Uint32 timeStep = 16; // Target frame duration for 60 FPS
+    const Uint32 timeStep = 16;
+    Uint32 lastUpdate = 0;
+    int milliseconds = 1000;
 
     while (!quit) {
-        timePassed = SDL_GetTicks();
+        Uint32 timePassed = SDL_GetTicks();
+        quit = handleEvents();
 
-        quit = handleEvents(satellite);
         SDL_RenderClear(renderer);
         earthPic.render(renderer, nullptr);
         issPic.render(renderer, &satellite);
         SDL_RenderPresent(renderer);
 
-        // Pass the speed factor to adjust movement
         float x = windowWidth / windowHeight;
         float y = 1;
-        updatePosition(x, y, windowWidth, windowHeight, satellite, speed);
+        updatePosition(x, y, windowWidth, windowHeight, satellite);
 
-        Uint32 frameDuration = SDL_GetTicks() - timePassed;
-        if (frameDuration < timeStep) {
-            SDL_Delay(timeStep - frameDuration);
+        if (timePassed - lastUpdate >= milliseconds) {
+            Utils::printLine("UPDATE NOW!");
+            lastUpdate = timePassed;
         }
+
+        while (timePassed + timeStep > SDL_GetTicks()) {
+            SDL_Delay(0);
+        }
+        Utils::printLine(to_string(timePassed));
     }
 }
 
@@ -58,10 +64,10 @@ SDL_FRect UI::createSatelliteRect() {
     return satellite;
 }
 
-void UI::updatePosition(const float x, const float y, const float windowWidth, const float windowHeight, SDL_FRect &r,
-                        const float speed) {
-    r.x += x * speed;
-    r.y += y * speed;
+void UI::updatePosition(const float x, const float y, const float windowWidth, const float windowHeight,
+                        SDL_FRect &r) {
+    r.x += x;
+    r.y += y;
 
     if (r.x > windowWidth || r.y > windowHeight) {
         r.x = -r.w / 2;
@@ -69,7 +75,7 @@ void UI::updatePosition(const float x, const float y, const float windowWidth, c
     }
 }
 
-bool UI::handleEvents(SDL_FRect &r) {
+bool UI::handleEvents() {
     bool quit = false;
     SDL_Event e;
     while (SDL_PollEvent(&e) != 0) {

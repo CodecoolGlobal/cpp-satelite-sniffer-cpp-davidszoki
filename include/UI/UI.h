@@ -10,11 +10,11 @@ public:
 
     ~UI();
 
-    void run(float speed);
+    void run();
 
-    static bool handleEvents(SDL_FRect &r);
+    static bool handleEvents();
 
-    void updatePosition(float x, float y, float windowWidth, float windowHeight, SDL_FRect &r, float speed);
+    void updatePosition(float x, float y, float windowWidth, float windowHeight, SDL_FRect &r);
 
     static SDL_FRect createSatelliteRect();
 
