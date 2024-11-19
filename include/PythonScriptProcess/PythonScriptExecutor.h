@@ -5,11 +5,15 @@
 #include <TLE.h>
 
 namespace PythonScriptExecutor {
-    void executeGetTLEDataPythonScript(const std::string &username, const std::string &password);
-
     void getTLEData(PyObject *pModule, const std::string &username, const std::string &password);
 
-    GPS executeGetSatelliteCoordinatesPythonScript(const TLE &tle);
+    void executeGetTLEDataPythonScript(const std::string &username, const std::string &password);
 
-    GPS getSatelliteCoordinates(PyObject *pModule, const TLE &tle);
+    GPS executeGetSatelliteGPSPythonScript(const TLE &tle);
+
+    GPS getSatelliteGPS(PyObject *pModule, const TLE &tle);
+
+    GPS getSatelliteGPSAtTimeWindow(PyObject *pModule, const TLE &tle, const std::string &observation_date);
+
+    GPS executeGetSatelliteGPSPAtTimeWindowPythonScript(const TLE &tle, const std::string &time);
 }
