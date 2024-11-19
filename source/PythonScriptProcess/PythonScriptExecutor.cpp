@@ -145,4 +145,12 @@ namespace PythonScriptExecutor {
 
         return gpsData;
     }
+
+    GPS executeGetSatelliteGPSPAtTimeWindowPythonScript(const TLE &tle, const string &time) {
+        Py_Initialize();
+        auto pModule = PythonScriptConverter::loadPythonModule("TLEtoGPS");
+        auto gps = getSatelliteGPSAtTimeWindow(pModule, tle, time);
+        Py_Finalize();
+        return gps;
+    }
 }
