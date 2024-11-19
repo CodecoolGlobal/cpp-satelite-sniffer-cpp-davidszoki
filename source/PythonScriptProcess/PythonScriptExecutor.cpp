@@ -6,13 +6,6 @@
 using namespace std;
 
 namespace PythonScriptExecutor {
-    void executeGetTLEDataPythonScript(const string &username, const string &password) {
-        Py_Initialize();
-        auto pModule = PythonScriptConverter::loadPythonModule("GetTLE");
-        getTLEData(pModule, username, password);
-        Py_Finalize();
-    }
-
     void getTLEData(PyObject *pModule, const string &username, const string &password) {
         if (pModule != nullptr) {
             PyObject *pFunc = PyObject_GetAttrString(pModule, "fetch_tle_data");
@@ -53,19 +46,18 @@ namespace PythonScriptExecutor {
         }
     }
 
-    GPS executeGetSatelliteCoordinatesPythonScript(const TLE &tle) {
+    void executeGetTLEDataPythonScript(const string &username, const string &password) {
         Py_Initialize();
-        auto pModule = PythonScriptConverter::loadPythonModule("TLEtoGPS");
-        auto gps = getSatelliteCoordinates(pModule, tle);
+        auto pModule = PythonScriptConverter::loadPythonModule("GetTLE");
+        getTLEData(pModule, username, password);
         Py_Finalize();
-        return gps;
     }
 
-    GPS getSatelliteCoordinates(PyObject *pModule, const TLE &tle) {
+    GPS getSatelliteGPS(PyObject *pModule, const TLE &tle) {
         GPS gpsData{0, 0, 0};
 
         if (pModule != nullptr) {
-            PyObject *pFunc = PyObject_GetAttrString(pModule, "get_satellite_coordinates");
+            PyObject *pFunc = PyObject_GetAttrString(pModule, "get_satellite_gps");
 
             if (pFunc && PyCallable_Check(pFunc)) {
                 PyObject *pTleName = PyUnicode_FromString(tle.tle_name.c_str());
@@ -101,6 +93,15 @@ namespace PythonScriptExecutor {
 
         return gpsData;
     }
+
+    GPS executeGetSatelliteGPSPythonScript(const TLE &tle) {
+        Py_Initialize();
+        auto pModule = PythonScriptConverter::loadPythonModule("TLEtoGPS");
+        auto gps = getSatelliteGPS(pModule, tle);
+        Py_Finalize();
+        return gps;
+    }
+
     GPS getSatelliteGPSAtTimeWindow(PyObject *pModule, const TLE &tle, const string &observation_date) {
         GPS gpsData{0, 0, 0};
 
