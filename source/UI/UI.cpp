@@ -39,9 +39,6 @@ void UI::run(const int &speed) {
         issPic.render(renderer, &satellite);
         SDL_RenderPresent(renderer);
 
-        float x = windowWidth / windowHeight;
-        float y = 1;
-        updatePosition(x, y, windowWidth, windowHeight, satellite);
         auto gpsnow = TLEtoGPS::convertTLEToGPSAtTimeWindow("iss_last_tle.txt", timePassed * milliseconds);
         auto xy = convertGPStoPixels(gpsnow, windowWidth, windowHeight);
 
@@ -71,15 +68,20 @@ pair<float, float> UI::convertGPStoPixels(const GPS &gps, const float &windowWid
     auto lonRad = gps.longitude + M_PI;
     auto yFromEquator = radius * log(tan(M_PI / 4 + latRad / 2));
 
-    if (r.x > windowWidth || r.y > windowHeight) {
-        r.x = -r.w / 2;
-        r.y = -r.h / 2;
     xy.first = lonRad * radius;
     xy.second = windowHeight / 2 - yFromEquator;
     return xy;
 }
 
+
+void UI::updatePosition(const float &x, const float &y, const float &windowWidth, SDL_FRect &r) {
+    if (r.x + r.w / 2 > windowWidth + r.w) {
+        r.x = -(x - r.w / 2);
+        r.y = y - r.h / 2;
     }
+
+    r.x = x - r.w / 2;
+    r.y = y - r.h / 2;
 }
 
 bool UI::handleEvents() {
