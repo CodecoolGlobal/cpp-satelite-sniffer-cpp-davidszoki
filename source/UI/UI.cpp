@@ -1,8 +1,9 @@
 #include "UI.h"
 #include <iostream>
 #include <filesystem>
+#include <PythonScriptExecutor.h>
 #include <SDL_image.h>
-#include <Utils.h>
+#include <TLEtoGPS.h>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ UI::~UI() {
     SDL_Quit();
 }
 
-void UI::run() {
+void UI::run(const int &speed) {
     init();
     const auto path = std::filesystem::current_path().parent_path() /= "../resources/Images/";
     Texture issPic = loadTexture(path.u8string() + "ISS.png");
@@ -27,8 +28,7 @@ void UI::run() {
     SDL_Delay(100);
     bool quit = false;
     const Uint32 timeStep = 16;
-    Uint32 lastUpdate = 0;
-    int milliseconds = 1000;
+    Uint32 milliseconds = speed >= 1 ? 500 * speed : 500 / abs(speed);
 
     while (!quit) {
         Uint32 timePassed = SDL_GetTicks();
@@ -39,19 +39,14 @@ void UI::run() {
         issPic.render(renderer, &satellite);
         SDL_RenderPresent(renderer);
 
-        float x = windowWidth / windowHeight;
-        float y = 1;
-        updatePosition(x, y, windowWidth, windowHeight, satellite);
+        auto gpsnow = TLEtoGPS::convertTLEToGPSAtTimeWindow("iss_last_tle.txt", timePassed * milliseconds);
+        auto xy = convertGPStoPixels(gpsnow, windowWidth, windowHeight);
 
-        if (timePassed - lastUpdate >= milliseconds) {
-            Utils::printLine("UPDATE NOW!");
-            lastUpdate = timePassed;
-        }
+        updatePosition(xy.first, xy.second, windowWidth, satellite);
 
         while (timePassed + timeStep > SDL_GetTicks()) {
             SDL_Delay(0);
         }
-        Utils::printLine(to_string(timePassed));
     }
 }
 
@@ -59,20 +54,33 @@ SDL_FRect UI::createSatelliteRect() {
     SDL_FRect satellite;
     satellite.w = 50;
     satellite.h = 50;
-    satellite.x = -satellite.w / 2;
-    satellite.y = -satellite.h / 2;
+    satellite.x = -satellite.w;
+    satellite.y = -satellite.h;
     return satellite;
 }
 
-void UI::updatePosition(const float x, const float y, const float windowWidth, const float windowHeight,
-                        SDL_FRect &r) {
-    r.x += x;
-    r.y += y;
+pair<float, float> UI::convertGPStoPixels(const GPS &gps, const float &windowWidth, const float &windowHeight) {
+    pair<float, float> xy = {0, 0};
+    const auto radius = windowWidth / (2 * M_PI);
 
-    if (r.x > windowWidth || r.y > windowHeight) {
-        r.x = -r.w / 2;
-        r.y = -r.h / 2;
+    auto latRad = gps.latitude;
+    auto lonRad = gps.longitude + M_PI;
+    auto yFromEquator = radius * log(tan(M_PI / 4 + latRad / 2));
+
+    xy.first = lonRad * radius;
+    xy.second = windowHeight / 2 - yFromEquator;
+    return xy;
+}
+
+
+void UI::updatePosition(const float &x, const float &y, const float &windowWidth, SDL_FRect &r) {
+    if (r.x + r.w / 2 > windowWidth + r.w) {
+        r.x = -(x - r.w / 2);
+        r.y = y - r.h / 2;
     }
+
+    r.x = x - r.w / 2;
+    r.y = y - r.h / 2;
 }
 
 bool UI::handleEvents() {

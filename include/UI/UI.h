@@ -1,4 +1,5 @@
 #pragma once
+#include <GPS.h>
 #include <SDL.h>
 #include <string>
 #include "Texture.h"
@@ -10,13 +11,15 @@ public:
 
     ~UI();
 
-    void run();
+    void run(const int &speed = 1);
 
     static bool handleEvents();
 
-    void updatePosition(float x, float y, float windowWidth, float windowHeight, SDL_FRect &r);
+    void updatePosition(const float &x, const float &y, const float &windowWidth, SDL_FRect &r);
 
-    static SDL_FRect createSatelliteRect();
+    SDL_FRect createSatelliteRect();
+
+    std::pair<float, float> convertGPStoPixels(const GPS &gps, const float &windowWidth, const float &windowHeight);
 
     bool init();
 
