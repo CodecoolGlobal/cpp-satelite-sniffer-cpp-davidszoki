@@ -47,7 +47,6 @@ void UI::run(const int &speed) {
         while (timePassed + timeStep > SDL_GetTicks()) {
             SDL_Delay(0);
         }
-        Utils::printLine(to_string(timePassed));
     }
 }
 
@@ -55,8 +54,8 @@ SDL_FRect UI::createSatelliteRect() {
     SDL_FRect satellite;
     satellite.w = 50;
     satellite.h = 50;
-    satellite.x = -satellite.w / 2;
-    satellite.y = -satellite.h / 2;
+    satellite.x = -satellite.w;
+    satellite.y = -satellite.h;
     return satellite;
 }
 

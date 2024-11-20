@@ -17,7 +17,7 @@ public:
 
     void updatePosition(const float &x, const float &y, const float &windowWidth, SDL_FRect &r);
 
-    static SDL_FRect createSatelliteRect();
+    SDL_FRect createSatelliteRect();
 
     std::pair<float, float> convertGPStoPixels(const GPS &gps, const float &windowWidth, const float &windowHeight);
 
