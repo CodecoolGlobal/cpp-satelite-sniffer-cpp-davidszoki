@@ -64,14 +64,22 @@ SDL_FRect UI::createSatelliteRect() {
     return satellite;
 }
 
-void UI::updatePosition(const float x, const float y, const float windowWidth, const float windowHeight,
-                        SDL_FRect &r) {
-    r.x += x;
-    r.y += y;
+pair<float, float> UI::convertGPStoPixels(const GPS &gps, const float &windowWidth, const float &windowHeight) {
+    pair<float, float> xy = {0, 0};
+    const auto radius = windowWidth / (2 * M_PI);
+
+    auto latRad = gps.latitude;
+    auto lonRad = gps.longitude + M_PI;
+    auto yFromEquator = radius * log(tan(M_PI / 4 + latRad / 2));
 
     if (r.x > windowWidth || r.y > windowHeight) {
         r.x = -r.w / 2;
         r.y = -r.h / 2;
+    xy.first = lonRad * radius;
+    xy.second = windowHeight / 2 - yFromEquator;
+    return xy;
+}
+
     }
 }
 

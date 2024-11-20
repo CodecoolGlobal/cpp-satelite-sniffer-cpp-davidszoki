@@ -18,6 +18,8 @@ public:
 
     static SDL_FRect createSatelliteRect();
 
+    std::pair<float, float> convertGPStoPixels(const GPS &gps, const float &windowWidth, const float &windowHeight);
+
     bool init();
 
     Texture loadTexture(const std::string &filename) const;
