@@ -1,8 +1,9 @@
 #include "UI.h"
 #include <iostream>
 #include <filesystem>
+#include <PythonScriptExecutor.h>
 #include <SDL_image.h>
-#include <Utils.h>
+#include <TLEtoGPS.h>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ UI::~UI() {
     SDL_Quit();
 }
 
-void UI::run() {
+void UI::run(const int &speed) {
     init();
     const auto path = std::filesystem::current_path().parent_path() /= "../resources/Images/";
     Texture issPic = loadTexture(path.u8string() + "ISS.png");
@@ -27,8 +28,7 @@ void UI::run() {
     SDL_Delay(100);
     bool quit = false;
     const Uint32 timeStep = 16;
-    Uint32 lastUpdate = 0;
-    int milliseconds = 1000;
+    Uint32 milliseconds = speed >= 1 ? 500 * speed : 500 / abs(speed);
 
     while (!quit) {
         Uint32 timePassed = SDL_GetTicks();
@@ -42,11 +42,10 @@ void UI::run() {
         float x = windowWidth / windowHeight;
         float y = 1;
         updatePosition(x, y, windowWidth, windowHeight, satellite);
+        auto gpsnow = TLEtoGPS::convertTLEToGPSAtTimeWindow("iss_last_tle.txt", timePassed * milliseconds);
+        auto xy = convertGPStoPixels(gpsnow, windowWidth, windowHeight);
 
-        if (timePassed - lastUpdate >= milliseconds) {
-            Utils::printLine("UPDATE NOW!");
-            lastUpdate = timePassed;
-        }
+        updatePosition(xy.first, xy.second, windowWidth, satellite);
 
         while (timePassed + timeStep > SDL_GetTicks()) {
             SDL_Delay(0);

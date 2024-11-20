@@ -1,4 +1,5 @@
 #pragma once
+#include <GPS.h>
 #include <SDL.h>
 #include <string>
 #include "Texture.h"
@@ -10,7 +11,7 @@ public:
 
     ~UI();
 
-    void run();
+    void run(const int &speed = 1);
 
     static bool handleEvents();
 
