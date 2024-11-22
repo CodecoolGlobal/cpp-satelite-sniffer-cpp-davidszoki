@@ -8,6 +8,8 @@ set(SOURCES
         UI/Texture.cpp
         SatelliteSniffer/TLEtoGPS.cpp
         SatelliteSniffer/Utils.cpp
+        SatelliteSniffer/SatelliteSniffer.cpp
+        SatelliteSniffer/Satellite.cpp
 )
 
 add_executable(cpp_satelite_sniffer_cpp_davidszoki ${SOURCES})
