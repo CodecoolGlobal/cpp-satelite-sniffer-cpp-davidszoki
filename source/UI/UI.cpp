@@ -20,13 +20,9 @@ UI::~UI() {
 void UI::run(const int &speed) {
     init(width, height);
     Texture background = createTexture("2k_earth_daymap");
-    //vector<Texture> satelliteTextures;
-    //vector<SDL_FRect> satelliteUIElements;
-    Texture satTexture1 = createTexture(sniffer.getSatellites()[0].getTLE().name);
-    Texture satTexture2 = createTexture(sniffer.getSatellites()[1].getTLE().name);
-    SDL_FRect satRect1 = createSatelliteRect();
-    SDL_FRect satRect2 = createSatelliteRect();
-    //createSatelliteUIElements(satelliteTextures, satelliteUIElements);
+    std::vector<Texture> satelliteTextures;
+    std::vector<SDL_FRect> satelliteUIElements;
+    createSatelliteUIElements(satelliteTextures, satelliteUIElements);
 
     SDL_Delay(100);
     bool quit = false;
@@ -39,16 +35,11 @@ void UI::run(const int &speed) {
         quit = handleEvents();
 
         SDL_RenderClear(renderer);
-        renderTexture(background, nullptr);
-        renderTexture(satTexture1, &satRect1);
-        renderTexture(satTexture2, &satRect2);
-        //renderTextures(background, satelliteTextures, satelliteUIElements);
+        renderTextures(background, satelliteTextures, satelliteUIElements);
         SDL_RenderPresent(renderer);
 
         sniffer.updatePositions(width, height, updateTime);
-        updatePosition(sniffer.getSatellites()[0].getXY(), satRect1);
-        updatePosition(sniffer.getSatellites()[1].getXY(), satRect2);
-        //updatePositions(satelliteUIElements);
+        updatePositions(satelliteUIElements);
 
         while (timePassed + timeStep > SDL_GetTicks()) {
             SDL_Delay(1000);
