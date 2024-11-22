@@ -1,11 +1,14 @@
-#include "UI.h"
+#include <UI.h>
 #include <iostream>
-#include <filesystem>
 #include <PythonScriptExecutor.h>
 #include <SDL_image.h>
-#include <TLEtoGPS.h>
+#include <Utils.h>
 
 using namespace std;
+
+UI::UI(const int &width, const int &height, ISatelliteSniffer &sniffer)
+    : window(nullptr), renderer(nullptr), width(width), height(height), sniffer(sniffer) {
+}
 
 UI::~UI() {
     if (renderer) SDL_DestroyRenderer(renderer);
@@ -15,38 +18,50 @@ UI::~UI() {
 }
 
 void UI::run(const int &speed) {
-    init();
-    const auto path = std::filesystem::current_path().parent_path() /= "../resources/Images/";
-    Texture issPic = loadTexture(path.u8string() + "ISS.png");
-    Texture earthPic = loadTexture(path.u8string() + "2k_earth_daymap.png");
-
-    float windowWidth, windowHeight;
-    getWindowSize(windowWidth, windowHeight);
-
-    SDL_FRect satellite = createSatelliteRect();
+    init(width, height);
+    Texture background = createTexture("2k_earth_daymap");
+    //vector<Texture> satelliteTextures;
+    //vector<SDL_FRect> satelliteUIElements;
+    Texture satTexture1 = createTexture(sniffer.getSatellites()[0].getTLE().name);
+    Texture satTexture2 = createTexture(sniffer.getSatellites()[1].getTLE().name);
+    SDL_FRect satRect1 = createSatelliteRect();
+    SDL_FRect satRect2 = createSatelliteRect();
+    //createSatelliteUIElements(satelliteTextures, satelliteUIElements);
 
     SDL_Delay(100);
     bool quit = false;
     const Uint32 timeStep = 16;
-    Uint32 milliseconds = speed >= 1 ? 500 * speed : 500 / abs(speed);
+    const Uint32 milliseconds = speed >= 1 ? 500 * speed : 500 / abs(speed);
 
     while (!quit) {
-        Uint32 timePassed = SDL_GetTicks();
+        const Uint32 timePassed = SDL_GetTicks();
+        auto updateTime = timePassed * milliseconds;
         quit = handleEvents();
 
         SDL_RenderClear(renderer);
-        earthPic.render(renderer, nullptr);
-        issPic.render(renderer, &satellite);
+        renderTexture(background, nullptr);
+        renderTexture(satTexture1, &satRect1);
+        renderTexture(satTexture2, &satRect2);
+        //renderTextures(background, satelliteTextures, satelliteUIElements);
         SDL_RenderPresent(renderer);
 
-        auto gpsnow = TLEtoGPS::convertTLEToGPSAtTimeWindow("iss_last_tle.txt", timePassed * milliseconds);
-        auto xy = convertGPStoPixels(gpsnow, windowWidth, windowHeight);
-
-        updatePosition(xy.first, xy.second, windowWidth, satellite);
+        sniffer.updatePositions(width, height, updateTime);
+        updatePosition(sniffer.getSatellites()[0].getXY(), satRect1);
+        updatePosition(sniffer.getSatellites()[1].getXY(), satRect2);
+        //updatePositions(satelliteUIElements);
 
         while (timePassed + timeStep > SDL_GetTicks()) {
-            SDL_Delay(0);
+            SDL_Delay(1000);
         }
+    }
+}
+
+void UI::createSatelliteUIElements(vector<Texture> &satelliteTextures, vector<SDL_FRect> &satelliteUIElements) {
+    for (auto &sat: sniffer.getSatellites()) {
+        satelliteTextures.push_back(createTexture(sat.getTLE().name));
+
+        SDL_FRect rect = createSatelliteRect();
+        satelliteUIElements.push_back(rect);
     }
 }
 
@@ -59,28 +74,38 @@ SDL_FRect UI::createSatelliteRect() {
     return satellite;
 }
 
-pair<float, float> UI::convertGPStoPixels(const GPS &gps, const float &windowWidth, const float &windowHeight) {
-    pair<float, float> xy = {0, 0};
-    const auto radius = windowWidth / (2 * M_PI);
-
-    auto latRad = gps.latitude;
-    auto lonRad = gps.longitude + M_PI;
-    auto yFromEquator = radius * log(tan(M_PI / 4 + latRad / 2));
-
-    xy.first = lonRad * radius;
-    xy.second = windowHeight / 2 - yFromEquator;
-    return xy;
+Texture UI::createTexture(const std::string &filename) {
+    return loadTexture(path.u8string() + filename + ".png");
 }
 
+void UI::renderTexture(Texture &texture, SDL_FRect *rect) {
+    texture.render(renderer, rect);
+}
 
-void UI::updatePosition(const float &x, const float &y, const float &windowWidth, SDL_FRect &r) {
-    if (r.x + r.w / 2 > windowWidth + r.w) {
-        r.x = -(x - r.w / 2);
-        r.y = y - r.h / 2;
+void UI::renderTextures(Texture &background, vector<Texture> &satelliteTextures,
+                        vector<SDL_FRect> &satelliteUIElements) {
+    renderTexture(background, nullptr);
+    for (int i = 0; i < satelliteTextures.size(); i++) {
+        renderTexture(satelliteTextures[i], &satelliteUIElements[i]);
+        SDL_RenderPresent(renderer);
+    }
+}
+
+void UI::updatePosition(const pair<float, float> &xy, SDL_FRect &r) {
+    if (r.x + r.w / 2 > width + r.w) {
+        r.x = -(xy.first - r.w / 2);
+        r.y = xy.second - r.h / 2;
     }
 
-    r.x = x - r.w / 2;
-    r.y = y - r.h / 2;
+    r.x = xy.first - r.w / 2;
+    r.y = xy.second - r.h / 2;
+}
+
+void UI::updatePositions(vector<SDL_FRect> &satelliteUIElements) {
+    auto satellites = sniffer.getSatellites();
+    for (int i = 0; i < satellites.size(); i++) {
+        updatePosition(satellites[i].getXY(), satelliteUIElements[i]);
+    }
 }
 
 bool UI::handleEvents() {
@@ -94,12 +119,12 @@ bool UI::handleEvents() {
     return quit;
 }
 
-bool UI::init() {
+bool UI::init(const int &width, const int &height) {
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         cout << "SDL_Init Error: " << SDL_GetError() << endl;
         return false;
     }
-    if (!createWindow()) return false;
+    if (!createWindow(width, height)) return false;
     if (!createRenderer()) return false;
     if (!initSDLImage()) return false;
     return true;
@@ -114,15 +139,8 @@ Texture UI::loadTexture(const std::string &filename) const {
     return {imgTexture};
 }
 
-void UI::getWindowSize(float &width, float &height) const {
-    int intWidth, intHeight;
-    SDL_GetWindowSize(window, &intWidth, &intHeight);
-    width = static_cast<float>(intWidth);
-    height = static_cast<float>(intHeight);
-}
-
-bool UI::createWindow() {
-    window = SDL_CreateWindow("Satellite Sniffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1024, 512,
+bool UI::createWindow(const int &width, const int &height) {
+    window = SDL_CreateWindow("Satellite Sniffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                               SDL_WINDOW_SHOWN);
     if (window == nullptr) {
         cout << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
