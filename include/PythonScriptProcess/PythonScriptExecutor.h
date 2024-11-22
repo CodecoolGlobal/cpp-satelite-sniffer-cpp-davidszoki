@@ -1,13 +1,17 @@
 #pragma once
 #include <Python.h>
+#include <filesystem>
 #include <string>
 #include <GPS.h>
 #include <TLE.h>
 
-namespace PythonScriptExecutor {
-    void getTLEData(PyObject *pModule, const std::string &username, const std::string &password);
+static const std::filesystem::path workingDirectory = std::filesystem::current_path().parent_path();
 
-    void executeGetTLEDataPythonScript(const std::string &username, const std::string &password);
+namespace PythonScriptExecutor {
+    void getTLEData(PyObject *pModule, const std::string &username, const std::string &password,
+                    const std::string &satelliteName, const std::string &noradId);
+
+    void executeGetTLEDataPythonScript(const std::string &username, const std::string &password, const std::string &filename);
 
     GPS executeGetSatelliteGPSPythonScript(const TLE &tle);
 
