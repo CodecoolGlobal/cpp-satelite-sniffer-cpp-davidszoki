@@ -1,7 +1,9 @@
 #pragma once
 
 struct GPS {
-    double latitude, longitude, altitude;
-
     GPS(double latitude, double longtitude, double altitude);
+
+    ~GPS() = default;
+
+    double latitude, longitude, altitude;
 };

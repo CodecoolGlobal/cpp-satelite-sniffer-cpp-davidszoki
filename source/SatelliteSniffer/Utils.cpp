@@ -1,6 +1,8 @@
+#include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <string>
+#include <PythonScriptExecutor.h>
+#include <Satellite.h>
 #include <Utils.h>
 
 using namespace std;
@@ -33,5 +35,27 @@ namespace Utils {
         auto convertTime = system_clock::to_time_t(evaulateTime);
         tm *time = std::localtime(&convertTime);
         return time;
+    }
+
+    void fillSatellitesBySourceFile(const string &filename, vector<Satellite> &satellites) {
+        auto path = workingDirectory / "../resources/Satellites/" / filename;
+        ifstream inputFile(path);
+
+        if (!inputFile.is_open()) {
+            cerr << "Failed to open file: " << filename << endl;
+        }
+
+        string line;
+        while (std::getline(inputFile, line)) {
+            stringstream ss(line);
+            string name;
+            if (getline(ss, name, ';')) {
+                satellites.emplace_back(name + ".txt");
+            } else {
+                cerr << "Invalid line format: " << line << endl;
+            }
+        }
+
+        inputFile.close();
     }
 }

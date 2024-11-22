@@ -1,41 +1,56 @@
 #pragma once
-#include <GPS.h>
 #include <SDL.h>
 #include <string>
-#include "Texture.h"
+#include <vector>
+#include <filesystem>
+#include <ISatelliteSniffer.h>
+#include <Texture.h>
+
+const auto path = std::filesystem::current_path().parent_path() /= "../resources/Images/";
 
 class UI {
 public:
-    UI() : window(nullptr), renderer(nullptr) {
-    }
+    UI(const int &width, const int &height, ISatelliteSniffer &sniffer);
 
     ~UI();
 
     void run(const int &speed = 1);
 
-    static bool handleEvents();
-
-    void updatePosition(const float &x, const float &y, const float &windowWidth, SDL_FRect &r);
-
-    SDL_FRect createSatelliteRect();
-
-    std::pair<float, float> convertGPStoPixels(const GPS &gps, const float &windowWidth, const float &windowHeight);
-
-    bool init();
-
-    Texture loadTexture(const std::string &filename) const;
-
-    void getWindowSize(float &width, float &height) const;
-
-    SDL_Renderer *getRenderer() { return renderer; }
-
 private:
     SDL_Window *window;
     SDL_Renderer *renderer;
+    int width, height;
+    ISatelliteSniffer &sniffer;
 
-    bool createWindow();
+    bool createWindow(const int &width, const int &height);
 
     bool createRenderer();
 
     static bool initSDLImage();
+
+    static bool handleEvents();
+
+    void updatePosition(const std::pair<float, float> &xy, SDL_FRect &r);
+
+    void updatePositions(std::vector<SDL_FRect> &satelliteUIElements);
+
+    SDL_FRect createSatelliteRect();
+
+    void createSatelliteUIElements(std::vector<Texture> &satelliteTextures,
+                                   std::vector<SDL_FRect> &satelliteUIElements);
+
+    Texture createTexture(const std::string &filename);
+
+    std::vector<Texture> createSatelliteTextures();
+
+    void renderTexture(Texture &texture, SDL_FRect *rect);
+
+    void renderTextures(Texture &background, std::vector<Texture> &satelliteTextures,
+                        std::vector<SDL_FRect> &satelliteUIElements);
+
+    bool init(const int &width, const int &height);
+
+    Texture loadTexture(const std::string &filename) const;
+
+    SDL_Renderer *getRenderer() { return renderer; }
 };

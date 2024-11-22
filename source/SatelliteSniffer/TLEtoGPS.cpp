@@ -7,7 +7,7 @@ using namespace std;
 
 namespace TLEtoGPS {
     TLE readTLEData(const string &filename) {
-        TLE tle = {"", ""};
+        TLE tle = {"", "", ""};
         ifstream file(workingDirectory / "../resources/TLE/" / filename);
 
         if (!file.is_open()) {
@@ -15,11 +15,18 @@ namespace TLEtoGPS {
             return tle;
         }
 
+        size_t lastDot = filename.find_last_of('.');
+        if (lastDot != string::npos) {
+            tle.name = filename.substr(0, lastDot);
+        } else {
+            tle.name = filename;
+        }
+
         string line1, line2;
         while (getline(file, line1) && getline(file, line2)) {
             {
-                tle.tle_line1 = line1;
-                tle.tle_line2 = line2;
+                tle.line1 = line1;
+                tle.line2 = line2;
             }
         }
 
@@ -30,11 +37,5 @@ namespace TLEtoGPS {
     GPS convertTLEToGPS(const string &filename) {
         const auto tle = readTLEData(filename);
         return PythonScriptExecutor::executeGetSatelliteGPSPythonScript(tle);
-    }
-
-    GPS convertTLEToGPSAtTimeWindow(const string &filename, const int &millisecs) {
-        const auto tle = readTLEData(filename);
-        const auto timeString = Utils::getTimeString(millisecs);
-        return PythonScriptExecutor::executeGetSatelliteGPSPAtTimeWindowPythonScript(tle, timeString);
     }
 }
