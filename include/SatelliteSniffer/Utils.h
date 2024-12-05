@@ -12,6 +12,8 @@ namespace Utils {
 
     void printLine(const std::string &message);
 
+    void printLine(const std::string &message0, const std::string &message1);
+
     void printGPS(const GPS &gps);
 
     tm *getGMTTime(const int &milliseconds = 0);

@@ -24,6 +24,10 @@ namespace Utils {
         cout << message << endl;
     }
 
+    void printLine(const string &message0, const string &message1) {
+        cout << message0<< message1 << endl;
+    }
+
     void printGPS(const GPS &gps) {
         cout << "Lat: " << gps.latitude << endl;
         cout << "Long: " << gps.longitude << endl;
