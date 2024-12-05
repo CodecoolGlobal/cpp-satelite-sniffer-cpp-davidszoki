@@ -1,11 +1,10 @@
 #include <PythonScriptExecutor.h>
 #include <Satellite.h>
-#include <TLEtoGPS.h>
 #include <Utils.h>
 
 using namespace std;
 
-Satellite::Satellite(const string &filename): tle(TLEtoGPS::readTLEData(filename)) {
+Satellite::Satellite(const string &filename): tle(Utils::readTLEData(filename)) {
 }
 
 GPS Satellite::convertTLEToGPSAtTimeWindow(const TLE &tle, const int &milliseconds) const {
