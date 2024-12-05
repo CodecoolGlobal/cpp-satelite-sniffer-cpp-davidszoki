@@ -19,4 +19,6 @@ namespace Utils {
     tm *getGMTTime(const int &milliseconds = 0);
 
     void fillSatellitesBySourceFile(const std::string &filename, std::vector<Satellite> &satellites);
+
+    TLE readTLEData(const std::string &filename);
 }
