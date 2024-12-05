@@ -83,54 +83,6 @@ namespace PythonScriptExecutor {
         Py_Finalize();
     }
 
-    GPS getSatelliteGPS(PyObject *pModule, const TLE &tle) {
-        GPS gpsData{0, 0, 0};
-
-        if (pModule != nullptr) {
-            PyObject *pFunc = PyObject_GetAttrString(pModule, "get_satellite_gps");
-
-            if (pFunc && PyCallable_Check(pFunc)) {
-                PyObject *pTleLine1 = PyUnicode_FromString(tle.line1.c_str());
-                PyObject *pTleLine2 = PyUnicode_FromString(tle.line2.c_str());
-
-                PyObject *pArgs = PyTuple_Pack(2, pTleLine1, pTleLine2);
-                PyObject *pValue = PyObject_CallObject(pFunc, pArgs);
-                Py_DECREF(pArgs);
-                Py_DECREF(pTleLine1);
-                Py_DECREF(pTleLine2);
-
-                if (pValue != nullptr) {
-                    if (PyTuple_Check(pValue) && PyTuple_Size(pValue) == 3) {
-                        double latitude = PyFloat_AsDouble(PyTuple_GetItem(pValue, 0));
-                        double longitude = PyFloat_AsDouble(PyTuple_GetItem(pValue, 1));
-                        double altitude = PyFloat_AsDouble(PyTuple_GetItem(pValue, 2));
-
-                        gpsData = GPS(latitude, longitude, altitude);
-                    } else {
-                        std::cerr << "Returned value is not a tuple!" << std::endl;
-                    }
-                    Py_DECREF(pValue);
-                } else {
-                    PyErr_Print();
-                    std::cerr << "Call to get_satellite_coordinates() failed!" << std::endl;
-                }
-                Py_DECREF(pFunc);
-            } else {
-                std::cerr << "Cannot find function get_satellite_coordinates!" << std::endl;
-            }
-        }
-
-        return gpsData;
-    }
-
-    GPS executeGetSatelliteGPSPythonScript(const TLE &tle) {
-        Py_Initialize();
-        auto pModule = PythonScriptConverter::loadPythonModule("TLEtoGPS");
-        auto gps = getSatelliteGPS(pModule, tle);
-        Py_Finalize();
-        return gps;
-    }
-
     GPS getSatelliteGPSAtTimeWindow(PyObject *pModule, const TLE &tle, const string &observation_date) {
         GPS gpsData{0, 0, 0};
 
