@@ -14,7 +14,7 @@ namespace Utils {
 
     void printGPS(const GPS &gps);
 
-    tm *getLocalTime(const int &milliseconds = 0);
+    tm *getGMTTime(const int &milliseconds = 0);
 
     void fillSatellitesBySourceFile(const std::string &filename, std::vector<Satellite> &satellites);
 }

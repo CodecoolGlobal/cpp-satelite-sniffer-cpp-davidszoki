@@ -11,7 +11,7 @@ using namespace chrono;
 
 namespace Utils {
     string getTimeString(const int &milliseconds) {
-        tm *time = getLocalTime(milliseconds);
+        tm *time = getGMTTime(milliseconds);
 
         ostringstream oss;
         oss << std::put_time(time, "%Y-%m-%d %H:%M:%S");
@@ -30,10 +30,10 @@ namespace Utils {
         cout << "Alt: " << gps.altitude << endl;
     }
 
-    tm *getLocalTime(const int &milliseconds) {
+    tm *getGMTTime(const int &milliseconds) {
         auto evaulateTime = current + std::chrono::milliseconds(milliseconds);
         auto convertTime = system_clock::to_time_t(evaulateTime);
-        tm *time = std::localtime(&convertTime);
+        tm *time = gmtime(&convertTime);
         return time;
     }
 
