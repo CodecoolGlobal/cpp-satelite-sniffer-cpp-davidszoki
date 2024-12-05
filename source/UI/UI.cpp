@@ -1,8 +1,8 @@
 #include <UI.h>
-#include <iostream>
 #include <PythonScriptExecutor.h>
 #include <SDL_image.h>
 #include <Utils.h>
+#include <SDL_ttf.h>
 
 using namespace std;
 
@@ -15,6 +15,7 @@ UI::~UI() {
     if (window) SDL_DestroyWindow(window);
     IMG_Quit();
     SDL_Quit();
+    TTF_Quit();
 }
 
 void UI::run(const int &speed) {
@@ -23,6 +24,7 @@ void UI::run(const int &speed) {
     std::vector<Texture> satelliteTextures;
     std::vector<SDL_FRect> satelliteUIElements;
     createSatelliteUIElements(satelliteTextures, satelliteUIElements);
+    TTF_Font *Sans = TTF_OpenFont((path / ".." / "Fonts" / "Roboto-Bold.ttf").u8string().c_str(), 20);
 
     SDL_Delay(100);
     bool quit = false;
@@ -45,6 +47,7 @@ void UI::run(const int &speed) {
             SDL_Delay(1000);
         }
     }
+    TTF_CloseFont(Sans);
 }
 
 void UI::createSatelliteUIElements(vector<Texture> &satelliteTextures, vector<SDL_FRect> &satelliteUIElements) {
@@ -126,6 +129,7 @@ bool UI::handleEvents() {
 }
 
 bool UI::init(const int &width, const int &height) {
+    TTF_Init();
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         cout << "SDL_Init Error: " << SDL_GetError() << endl;
         return false;
