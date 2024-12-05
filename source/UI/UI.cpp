@@ -93,7 +93,6 @@ void UI::renderTextures(Texture &background, vector<Texture> &satelliteTextures,
     renderTexture(background, nullptr);
     for (int i = 0; i < satelliteTextures.size(); i++) {
         renderTexture(satelliteTextures[i], &satelliteUIElements[i]);
-        SDL_RenderPresent(renderer);
     }
 }
 
