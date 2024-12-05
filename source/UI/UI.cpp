@@ -21,19 +21,19 @@ UI::~UI() {
 void UI::run(const int &speed) {
     init(width, height);
     Texture background = createTexture("2k_earth_daymap");
-    std::vector<Texture> satelliteTextures;
-    std::vector<SDL_FRect> satelliteUIElements;
+    vector<Texture> satelliteTextures;
+    vector<SDL_FRect> satelliteUIElements;
     createSatelliteUIElements(satelliteTextures, satelliteUIElements);
     TTF_Font *Sans = TTF_OpenFont((path / ".." / "Fonts" / "Roboto-Bold.ttf").u8string().c_str(), 20);
     SDL_FRect text_rect = creteTextRect();
 
-    SDL_Delay(100);
     bool quit = false;
-    const Uint32 timeStep = 16;
     const Uint32 milliseconds = speed >= 1 ? 500 * speed : 500 / abs(speed);
+    SDL_Delay(100); // Small delay before the loop starts
 
+    // Start the main loop
     while (!quit) {
-        const Uint32 timePassed = SDL_GetTicks();
+        Uint32 timePassed = SDL_GetTicks(); // Start time of the frame
         auto updateTime = timePassed * milliseconds;
         quit = handleEvents();
 
@@ -57,7 +57,6 @@ void UI::run(const int &speed) {
 void UI::createSatelliteUIElements(vector<Texture> &satelliteTextures, vector<SDL_FRect> &satelliteUIElements) {
     for (auto &sat: sniffer.getSatellites()) {
         satelliteTextures.push_back(createTexture(sat.getTLE().name));
-
         SDL_FRect rect = createSatelliteRect();
         satelliteUIElements.push_back(rect);
     }
@@ -135,7 +134,7 @@ bool UI::handleEvents() {
 bool UI::init(const int &width, const int &height) {
     TTF_Init();
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        cout << "SDL_Init Error: " << SDL_GetError() << endl;
+        Utils::printLine("SDL_Init Error: ", SDL_GetError());
         return false;
     }
     if (!createWindow(width, height)) return false;
@@ -157,7 +156,7 @@ bool UI::createWindow(const int &width, const int &height) {
     window = SDL_CreateWindow("Satellite Sniffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                               SDL_WINDOW_SHOWN);
     if (window == nullptr) {
-        cout << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
+        Utils::printLine("SDL_CreateWindow Error: ", SDL_GetError());
         return false;
     }
     return true;
@@ -167,7 +166,7 @@ bool UI::createRenderer() {
     if (!window) return false;
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr) {
-        cout << "SDL_CreateRenderer Error: " << SDL_GetError() << endl;
+        Utils::printLine("SDL_CreateRenderer Error: ", SDL_GetError());
         return false;
     }
     return true;
