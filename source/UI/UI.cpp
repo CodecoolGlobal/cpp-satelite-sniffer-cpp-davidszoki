@@ -25,6 +25,7 @@ void UI::run(const int &speed) {
     std::vector<SDL_FRect> satelliteUIElements;
     createSatelliteUIElements(satelliteTextures, satelliteUIElements);
     TTF_Font *Sans = TTF_OpenFont((path / ".." / "Fonts" / "Roboto-Bold.ttf").u8string().c_str(), 20);
+    SDL_FRect text_rect = creteTextRect();
 
     SDL_Delay(100);
     bool quit = false;
@@ -36,16 +37,19 @@ void UI::run(const int &speed) {
         auto updateTime = timePassed * milliseconds;
         quit = handleEvents();
 
+        string text = "GMT " + Utils::getTimeString(updateTime);
+        SDL_Surface *surface = TTF_RenderText_Solid(Sans, text.c_str(), {255, 0, 0});
+        SDL_Texture *textTexture = createTextTexture(surface);
+
         SDL_RenderClear(renderer);
         renderTextures(background, satelliteTextures, satelliteUIElements);
+        SDL_RenderCopyF(renderer, textTexture, NULL, &text_rect);
         SDL_RenderPresent(renderer);
 
         sniffer.updatePositions(width, height, updateTime);
         updatePositions(satelliteUIElements);
 
-        while (timePassed + timeStep > SDL_GetTicks()) {
-            SDL_Delay(1000);
-        }
+        SDL_DestroyTexture(textTexture);
     }
     TTF_CloseFont(Sans);
 }
