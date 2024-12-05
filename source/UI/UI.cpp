@@ -137,6 +137,8 @@ bool UI::init(const int &width, const int &height) {
         Utils::printLine("SDL_Init Error: ", SDL_GetError());
         return false;
     }
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
     if (!createWindow(width, height)) return false;
     if (!createRenderer()) return false;
     if (!initSDLImage()) return false;
