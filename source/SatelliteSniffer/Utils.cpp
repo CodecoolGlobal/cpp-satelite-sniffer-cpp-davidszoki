@@ -11,7 +11,7 @@ using namespace chrono;
 
 namespace Utils {
     string getTimeString(const int &milliseconds) {
-        tm *time = getLocalTime(milliseconds);
+        tm *time = getGMTTime(milliseconds);
 
         ostringstream oss;
         oss << std::put_time(time, "%Y-%m-%d %H:%M:%S");
@@ -24,16 +24,20 @@ namespace Utils {
         cout << message << endl;
     }
 
+    void printLine(const string &message0, const string &message1) {
+        cout << message0<< message1 << endl;
+    }
+
     void printGPS(const GPS &gps) {
         cout << "Lat: " << gps.latitude << endl;
         cout << "Long: " << gps.longitude << endl;
         cout << "Alt: " << gps.altitude << endl;
     }
 
-    tm *getLocalTime(const int &milliseconds) {
+    tm *getGMTTime(const int &milliseconds) {
         auto evaulateTime = current + std::chrono::milliseconds(milliseconds);
         auto convertTime = system_clock::to_time_t(evaulateTime);
-        tm *time = std::localtime(&convertTime);
+        tm *time = gmtime(&convertTime);
         return time;
     }
 
@@ -57,5 +61,33 @@ namespace Utils {
         }
 
         inputFile.close();
+    }
+
+    TLE readTLEData(const string &filename) {
+        TLE tle = {"", "", ""};
+        ifstream file(workingDirectory / "../resources/TLE/" / filename);
+
+        if (!file.is_open()) {
+            printLine("Error opening file: " + filename);
+            return tle;
+        }
+
+        size_t lastDot = filename.find_last_of('.');
+        if (lastDot != string::npos) {
+            tle.name = filename.substr(0, lastDot);
+        } else {
+            tle.name = filename;
+        }
+
+        string line1, line2;
+        while (getline(file, line1) && getline(file, line2)) {
+            {
+                tle.line1 = line1;
+                tle.line2 = line2;
+            }
+        }
+
+        file.close();
+        return tle;
     }
 }

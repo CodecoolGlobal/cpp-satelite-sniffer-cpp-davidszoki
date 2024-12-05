@@ -36,10 +36,14 @@ private:
 
     SDL_FRect createSatelliteRect();
 
+    SDL_FRect creteTextRect();
+
     void createSatelliteUIElements(std::vector<Texture> &satelliteTextures,
                                    std::vector<SDL_FRect> &satelliteUIElements);
 
     Texture createTexture(const std::string &filename);
+
+    SDL_Texture *createTextTexture(SDL_Surface *surface);
 
     std::vector<Texture> createSatelliteTextures();
 

@@ -1,8 +1,8 @@
 #include <UI.h>
-#include <iostream>
 #include <PythonScriptExecutor.h>
 #include <SDL_image.h>
 #include <Utils.h>
+#include <SDL_ttf.h>
 
 using namespace std;
 
@@ -15,42 +15,48 @@ UI::~UI() {
     if (window) SDL_DestroyWindow(window);
     IMG_Quit();
     SDL_Quit();
+    TTF_Quit();
 }
 
 void UI::run(const int &speed) {
     init(width, height);
     Texture background = createTexture("2k_earth_daymap");
-    std::vector<Texture> satelliteTextures;
-    std::vector<SDL_FRect> satelliteUIElements;
+    vector<Texture> satelliteTextures;
+    vector<SDL_FRect> satelliteUIElements;
     createSatelliteUIElements(satelliteTextures, satelliteUIElements);
+    TTF_Font *Sans = TTF_OpenFont((path / ".." / "Fonts" / "Roboto-Bold.ttf").u8string().c_str(), 20);
+    SDL_FRect text_rect = creteTextRect();
 
-    SDL_Delay(100);
     bool quit = false;
-    const Uint32 timeStep = 16;
     const Uint32 milliseconds = speed >= 1 ? 500 * speed : 500 / abs(speed);
+    SDL_Delay(100); // Small delay before the loop starts
 
+    // Start the main loop
     while (!quit) {
-        const Uint32 timePassed = SDL_GetTicks();
+        Uint32 timePassed = SDL_GetTicks(); // Start time of the frame
         auto updateTime = timePassed * milliseconds;
         quit = handleEvents();
 
+        string text = "GMT " + Utils::getTimeString(updateTime);
+        SDL_Surface *surface = TTF_RenderText_Solid(Sans, text.c_str(), {255, 0, 0});
+        SDL_Texture *textTexture = createTextTexture(surface);
+
         SDL_RenderClear(renderer);
         renderTextures(background, satelliteTextures, satelliteUIElements);
+        SDL_RenderCopyF(renderer, textTexture, NULL, &text_rect);
         SDL_RenderPresent(renderer);
 
         sniffer.updatePositions(width, height, updateTime);
         updatePositions(satelliteUIElements);
 
-        while (timePassed + timeStep > SDL_GetTicks()) {
-            SDL_Delay(1000);
-        }
+        SDL_DestroyTexture(textTexture);
     }
+    TTF_CloseFont(Sans);
 }
 
 void UI::createSatelliteUIElements(vector<Texture> &satelliteTextures, vector<SDL_FRect> &satelliteUIElements) {
     for (auto &sat: sniffer.getSatellites()) {
         satelliteTextures.push_back(createTexture(sat.getTLE().name));
-
         SDL_FRect rect = createSatelliteRect();
         satelliteUIElements.push_back(rect);
     }
@@ -63,6 +69,15 @@ SDL_FRect UI::createSatelliteRect() {
     satellite.x = -satellite.w;
     satellite.y = -satellite.h;
     return satellite;
+}
+
+SDL_FRect UI::creteTextRect() {
+    SDL_FRect m_rect;
+    m_rect.h = 40;
+    m_rect.w = 300;
+    m_rect.x = width / 2 - m_rect.w / 2;
+    m_rect.y = m_rect.h / 2;
+    return m_rect;
 }
 
 Texture UI::createTexture(const std::string &filename) {
@@ -78,8 +93,13 @@ void UI::renderTextures(Texture &background, vector<Texture> &satelliteTextures,
     renderTexture(background, nullptr);
     for (int i = 0; i < satelliteTextures.size(); i++) {
         renderTexture(satelliteTextures[i], &satelliteUIElements[i]);
-        SDL_RenderPresent(renderer);
     }
+}
+
+SDL_Texture *UI::createTextTexture(SDL_Surface *surface) {
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    return texture;
 }
 
 void UI::updatePosition(const pair<float, float> &xy, SDL_FRect &r) {
@@ -111,10 +131,13 @@ bool UI::handleEvents() {
 }
 
 bool UI::init(const int &width, const int &height) {
+    TTF_Init();
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        cout << "SDL_Init Error: " << SDL_GetError() << endl;
+        Utils::printLine("SDL_Init Error: ", SDL_GetError());
         return false;
     }
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "1");
+
     if (!createWindow(width, height)) return false;
     if (!createRenderer()) return false;
     if (!initSDLImage()) return false;
@@ -134,7 +157,7 @@ bool UI::createWindow(const int &width, const int &height) {
     window = SDL_CreateWindow("Satellite Sniffer", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height,
                               SDL_WINDOW_SHOWN);
     if (window == nullptr) {
-        cout << "SDL_CreateWindow Error: " << SDL_GetError() << endl;
+        Utils::printLine("SDL_CreateWindow Error: ", SDL_GetError());
         return false;
     }
     return true;
@@ -144,7 +167,7 @@ bool UI::createRenderer() {
     if (!window) return false;
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (renderer == nullptr) {
-        cout << "SDL_CreateRenderer Error: " << SDL_GetError() << endl;
+        Utils::printLine("SDL_CreateRenderer Error: ", SDL_GetError());
         return false;
     }
     return true;

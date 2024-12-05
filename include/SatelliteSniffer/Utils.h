@@ -12,9 +12,13 @@ namespace Utils {
 
     void printLine(const std::string &message);
 
+    void printLine(const std::string &message0, const std::string &message1);
+
     void printGPS(const GPS &gps);
 
-    tm *getLocalTime(const int &milliseconds = 0);
+    tm *getGMTTime(const int &milliseconds = 0);
 
     void fillSatellitesBySourceFile(const std::string &filename, std::vector<Satellite> &satellites);
+
+    TLE readTLEData(const std::string &filename);
 }

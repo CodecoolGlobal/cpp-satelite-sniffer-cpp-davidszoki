@@ -13,10 +13,6 @@ namespace PythonScriptExecutor {
 
     void executeGetTLEDataPythonScript(const std::string &username, const std::string &password, const std::string &filename);
 
-    GPS executeGetSatelliteGPSPythonScript(const TLE &tle);
-
-    GPS getSatelliteGPS(PyObject *pModule, const TLE &tle);
-
     GPS getSatelliteGPSAtTimeWindow(PyObject *pModule, const TLE &tle, const std::string &observation_date);
 
     GPS executeGetSatelliteGPSPAtTimeWindowPythonScript(const TLE &tle, const std::string &time);
