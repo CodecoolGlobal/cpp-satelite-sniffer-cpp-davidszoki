@@ -65,6 +65,15 @@ SDL_FRect UI::createSatelliteRect() {
     return satellite;
 }
 
+SDL_FRect UI::creteTextRect() {
+    SDL_FRect m_rect;
+    m_rect.h = 40;
+    m_rect.w = 300;
+    m_rect.x = width / 2 - m_rect.w / 2;
+    m_rect.y = m_rect.h / 2;
+    return m_rect;
+}
+
 Texture UI::createTexture(const std::string &filename) {
     return loadTexture(path.u8string() + filename + ".png");
 }
