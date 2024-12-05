@@ -43,6 +43,8 @@ private:
 
     Texture createTexture(const std::string &filename);
 
+    SDL_Texture *createTextTexture(SDL_Surface *surface);
+
     std::vector<Texture> createSatelliteTextures();
 
     void renderTexture(Texture &texture, SDL_FRect *rect);

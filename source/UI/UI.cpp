@@ -91,6 +91,12 @@ void UI::renderTextures(Texture &background, vector<Texture> &satelliteTextures,
     }
 }
 
+SDL_Texture *UI::createTextTexture(SDL_Surface *surface) {
+    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, surface);
+    SDL_FreeSurface(surface);
+    return texture;
+}
+
 void UI::updatePosition(const pair<float, float> &xy, SDL_FRect &r) {
     if (r.x + r.w / 2 > width + r.w) {
         r.x = -(xy.first - r.w / 2);
